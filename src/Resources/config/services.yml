@@ -1,0 +1,4 @@
+services:
+#    minimal_original_social_connect.example:
+#        class: MinimalOriginal\SocialConnectBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]
