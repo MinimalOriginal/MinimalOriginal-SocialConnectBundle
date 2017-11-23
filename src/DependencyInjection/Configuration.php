@@ -20,9 +20,21 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('minimal_original_social_connect');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $rootNode
+            ->children()
+                ->arrayNode('auth')
+                    ->isRequired()
+                    ->children()
+                        ->arrayNode('facebook')
+                            ->isRequired()
+                            ->children()
+                                ->scalarNode('id')->isRequired()->cannotBeEmpty()->end()
+                                ->scalarNode('secret')->isRequired()->cannotBeEmpty()->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
 
         return $treeBuilder;
     }

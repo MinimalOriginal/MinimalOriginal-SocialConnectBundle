@@ -24,5 +24,10 @@ class MinimalOriginalSocialConnectExtension extends Extension
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
+
+        if( true === isset($config['auth']) && true === is_array($config['auth'])){
+          $container->setParameter('facebook.app.id',$config['auth']['facebook']['id']);
+          $container->setParameter('facebook.app.secret',$config['auth']['facebook']['secret']);
+        }
     }
 }

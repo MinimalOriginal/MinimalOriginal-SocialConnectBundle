@@ -1,4 +1,16 @@
 services:
-#    minimal_original_social_connect.example:
-#        class: MinimalOriginal\SocialConnectBundle\Example
-#        arguments: ["@service_id", "plain_value", "%parameter%"]
+      MinimalOriginal\SocialConnectBundle\Twig\Extension\SocialExtension:
+          arguments:
+              - "%facebook.app.id%"
+              - "%facebook.app.secret%"
+              - "@router"
+          tags:
+              - { name: twig.extension }
+      # Oauth
+      MinimalOriginal\SocialConnectBundle\Security\Authentication\Provider\FacebookProvider:
+          arguments: ['','@cache.app']
+          public: false
+
+      MinimalOriginal\SocialConnectBundle\Security\Firewall\FacebookListener:
+          arguments: ['@security.token_storage', '@security.authentication.manager', '%facebook.app.id%', '%facebook.app.secret%']
+          public: false
