@@ -18,9 +18,19 @@ minimal_original_social_connect:
 User entity
 ========
 
-use MinimalOriginal\SocialConnectBundle\Entity\User as BaseUser;
+use MinimalOriginal\SocialConnectBundle\Entity\Traits\UserFacebookConnectTrait;
 
-class User extends BaseUser
+class User
 {
+  use UserFacebookConnectTrait;
   ...
 }
+
+
+Configuration
+========
+minimal_original_social_connect:
+  auth:
+    facebook:
+      id: '%facebook_app_id%'
+      secret: '%facebook_app_secret%'

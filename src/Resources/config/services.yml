@@ -12,5 +12,5 @@ services:
           public: false
 
       MinimalOriginal\SocialConnectBundle\Security\Firewall\FacebookListener:
-          arguments: ['@security.token_storage', '@security.authentication.manager', '%facebook.app.id%', '%facebook.app.secret%']
+          arguments: ['@security.token_storage', '@security.authentication.manager', '@router', '%facebook.app.id%', '%facebook.app.secret%']
           public: false

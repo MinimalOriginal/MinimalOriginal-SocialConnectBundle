@@ -8,9 +8,12 @@ use Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterfac
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Firewall\ListenerInterface;
-use MinimalOriginal\SocialConnectBundle\Security\Authentication\Token\SocialConnectUserToken;
-
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Security\Http\HttpUtils;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
+use MinimalOriginal\SocialConnectBundle\Security\Authentication\Token\SocialConnectUserToken;
 
 use Facebook\Facebook;
 use Facebook\Exceptions\{FacebookResponseException, FacebookSDKException};
@@ -20,20 +23,24 @@ class FacebookListener implements ListenerInterface
 {
   protected $tokenStorage;
   protected $authenticationManager;
+  protected $httpUtils;
   protected $facebook_app_id;
   protected $facebook_app_secret;
 
-    public function __construct(TokenStorageInterface $tokenStorage, AuthenticationManagerInterface $authenticationManager, $facebook_app_id = '', $facebook_app_secret = '' )
+    public function __construct(TokenStorageInterface $tokenStorage, AuthenticationManagerInterface $authenticationManager, UrlGeneratorInterface $urlGenerator, $facebook_app_id = '', $facebook_app_secret = '' )
     {
       $this->tokenStorage = $tokenStorage;
       $this->authenticationManager = $authenticationManager;
       $this->facebook_app_id = $facebook_app_id;
       $this->facebook_app_secret = $facebook_app_secret;
+
+      $this->httpUtils = new HttpUtils($urlGenerator);
     }
 
     public function handle(GetResponseEvent $event)
     {
         $request = $event->getRequest();
+
         if( 'facebook-fallback' !== $request->get('_route') ){
           return;
         }
@@ -105,21 +112,26 @@ class FacebookListener implements ListenerInterface
 
         $token = new SocialConnectUserToken($accessToken);
         $token->setUser($facebook_user['email']);
-        try {
-          $authToken = $this->authenticationManager->authenticate($token);
-          $this->tokenStorage->setToken($authToken);
-            return;
-        } catch (AuthenticationException $failed) {
-            // ... you might log something here
 
-            // To deny the authentication clear the token. This will redirect to the login page.
-            // Make sure to only clear your token, not those of other authentication listeners.
-            // $token = $this->tokenStorage->getToken();
-            // if ($token instanceof WsseUserToken && $this->providerKey === $token->getProviderKey()) {
-            //     $this->tokenStorage->setToken(null);
-            // }
-            // return;
+        try {
+
+            if (null === ($authToken = $this->authenticationManager->authenticate($token))) {
+                return;
+            }
+
+            if ($authToken instanceof TokenInterface) {
+              $this->tokenStorage->setToken($authToken);
+            } else {
+                throw new \RuntimeException('Authentication response not a tokeninterface.');
+            }
+        } catch (AuthenticationException $e) {
+            throw new \RuntimeException('Authentication Failure.');
         }
+
+        $response = $this->httpUtils->createRedirectResponse($request, '/');
+
+        $event->setResponse($response);
+
 
     }
 
