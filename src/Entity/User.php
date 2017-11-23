@@ -12,11 +12,6 @@ abstract class User extends FOSUser
     protected $facebookId;
 
     /**
-     * @ORM\Column(name="facebook_access_token", type="string", length=255, nullable=true)
-     */
-    protected $facebookAccessToken;
-
-    /**
      * @param string $facebookId
      * @return User
      */
@@ -33,25 +28,6 @@ abstract class User extends FOSUser
     public function getFacebookId()
     {
         return $this->facebookId;
-    }
-
-    /**
-     * @param string $facebookAccessToken
-     * @return User
-     */
-    public function setFacebookAccessToken($facebookAccessToken)
-    {
-        $this->facebookAccessToken = $facebookAccessToken;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFacebookAccessToken()
-    {
-        return $this->facebookAccessToken;
     }
 
 }
