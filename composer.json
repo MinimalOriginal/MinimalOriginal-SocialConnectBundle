@@ -1,5 +1,5 @@
 {
-    "name": "minimaloriginal/social-connect-bundle",
+    "name": "minimaloriginal/mo-social-connect-bundle",
     "description" : "The social connect bundle by MinimalOriginal",
     "type" : "symfony-bundle",
     "keywords" : [
