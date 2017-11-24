@@ -65,7 +65,7 @@ class FacebookUserProvider implements UserProviderInterface
             $user->setEmail($facebookUser['email']);
             $user->setUsername($facebookUser['name']);
             $user->setEnabled(true);
-            $user->setPlainPassword('mqjdsfkldqjsfmlkjqdsfmlkdqjs');
+            $user->setPlainPassword(random_bytes(10));
             $this->userManager->updatePassword($user);
             $this->userManager->updateUser($user);
             $token->setUser($user);

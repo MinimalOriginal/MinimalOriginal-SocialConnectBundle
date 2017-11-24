@@ -61,11 +61,14 @@ class FacebookListener implements ListenerInterface
         }
 
         if (! isset($accessToken)) {
-          if ($helper->getError()) {
-            throw new HttpException($helper->getErrorCode(), $helper->getError());
-          } else {
-            throw new HttpException(400, 'Bad request');
-          }
+          // if ($helper->getError()) {
+          //   throw new HttpException($helper->getErrorCode(), $helper->getError());
+          // } else {
+          //   throw new HttpException(400, 'Bad request');
+          // }
+          $response = $this->httpUtils->createRedirectResponse($request, '/');
+          $event->setResponse($response);
+          return;
         }
 
         // The OAuth 2.0 client handler helps us manage access tokens
