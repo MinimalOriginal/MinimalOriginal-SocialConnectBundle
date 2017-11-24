@@ -7,22 +7,23 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\SecurityFactoryInterface;
-use MinimalOriginal\SocialConnectBundle\Security\Authentication\Provider\FacebookProvider;
+
+use MinimalOriginal\SocialConnectBundle\Security\Authentication\Provider\FacebookAuthenticationProvider;
 use MinimalOriginal\SocialConnectBundle\Security\Firewall\FacebookListener;
 
 class FacebookFactory implements SecurityFactoryInterface
 {
     public function create(ContainerBuilder $container, $id, $config, $userProvider, $defaultEntryPoint)
     {
-        $providerId = 'security.authentication.provider.wsse.'.$id;
+        $providerId = 'security.authentication.provider.mo_facebook_connect.'.$id;
         $container
-            ->setDefinition($providerId, new ChildDefinition(FacebookProvider::class))
-            ->replaceArgument(0, new Reference($userProvider))
+            ->setDefinition($providerId, new ChildDefinition('minimal_original.authentication_provider.facebook'))
+            //->replaceArgument(0, new Reference($userProvider))
         ;
 
-        $listenerId = 'security.authentication.listener.wsse.'.$id;
+        $listenerId = 'security.authentication.listener.mo_facebook_connect.'.$id;
         $listener = $container
-        ->setDefinition($listenerId, new ChildDefinition(FacebookListener::class));
+        ->setDefinition($listenerId, new ChildDefinition('minimal_original.firewall_listener.facebook'));
 
         return array($providerId, $listenerId, $defaultEntryPoint);
     }

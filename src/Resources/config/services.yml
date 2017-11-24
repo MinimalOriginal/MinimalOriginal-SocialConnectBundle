@@ -1,5 +1,6 @@
 services:
-      MinimalOriginal\SocialConnectBundle\Twig\Extension\SocialExtension:
+      minimal_original.twig.extension.social:
+          class: MinimalOriginal\SocialConnectBundle\Twig\Extension\SocialExtension
           arguments:
               - "%facebook.app.id%"
               - "%facebook.app.secret%"
@@ -7,10 +8,17 @@ services:
           tags:
               - { name: twig.extension }
       # Oauth
-      MinimalOriginal\SocialConnectBundle\Security\Authentication\Provider\FacebookProvider:
-          arguments: ['','@cache.app']
+      minimal_original.authentication_provider.facebook:
+          class: MinimalOriginal\SocialConnectBundle\Security\Authentication\Provider\FacebookAuthenticationProvider
+          arguments: ['@minimal_original.user_provider.facebook']
           public: false
 
-      MinimalOriginal\SocialConnectBundle\Security\Firewall\FacebookListener:
+      minimal_original.user_provider.facebook:
+          class: MinimalOriginal\SocialConnectBundle\Security\Core\User\FacebookUserProvider
+          arguments: ['@fos_user.user_manager']
+          public: false
+
+      minimal_original.firewall_listener.facebook:
+          class: MinimalOriginal\SocialConnectBundle\Security\Firewall\FacebookListener
           arguments: ['@security.token_storage', '@security.authentication.manager', '@router', '%facebook.app.id%', '%facebook.app.secret%']
           public: false

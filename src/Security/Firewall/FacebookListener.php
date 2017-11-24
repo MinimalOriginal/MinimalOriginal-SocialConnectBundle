@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Http\HttpUtils;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-use MinimalOriginal\SocialConnectBundle\Security\Authentication\Token\SocialConnectUserToken;
+use MinimalOriginal\SocialConnectBundle\Security\Authentication\Token\FacebookUserToken;
 
 use Facebook\Facebook;
 use Facebook\Exceptions\{FacebookResponseException, FacebookSDKException};
@@ -55,11 +55,9 @@ class FacebookListener implements ListenerInterface
         try {
           $accessToken = $helper->getAccessToken();
         } catch(FacebookResponseException $e) {
-          throw $e;
-          exit;
+          throw new AuthenticationException('Facebook response exception ' . $e->getMessage());
         } catch(FacebookSDKException $e) {
-          throw $e;
-          exit;
+          throw new AuthenticationException('Facebook SDK exception ' . $e->getMessage());
         }
 
         if (! isset($accessToken)) {
@@ -68,7 +66,6 @@ class FacebookListener implements ListenerInterface
           } else {
             throw new HttpException(400, 'Bad request');
           }
-          exit;
         }
 
         // The OAuth 2.0 client handler helps us manage access tokens
@@ -88,8 +85,7 @@ class FacebookListener implements ListenerInterface
           try {
             $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
           } catch (FacebookSDKException $e) {
-            throw $e;
-            exit;
+            throw new AuthenticationException('Facebook SDK exception : ' . $e->getMessage());
           }
 
         }
@@ -101,16 +97,13 @@ class FacebookListener implements ListenerInterface
           // enum{small, normal, album, large, square}
           $responsePicture = $fb->get('/me/picture?type=normal&redirect=false', (string) $accessToken);
         } catch(FacebookResponseException $e) {
-          throw $e;
-          exit;
+          throw new AuthenticationException('Facebook response exception : ' . $e->getMessage());
         } catch(FacebookSDKException $e) {
-          throw $e;
-          exit;
+          throw new AuthenticationException('Facebook SDK exception : ' . $e->getMessage());
         }
-
         $facebook_user = $responseUser->getGraphUser();
-
-        $token = new SocialConnectUserToken($accessToken);
+        $token = new FacebookUserToken($accessToken);
+        $token->setFacebookUser($facebook_user);
         $token->setUser($facebook_user['email']);
 
         try {
@@ -118,14 +111,13 @@ class FacebookListener implements ListenerInterface
             if (null === ($authToken = $this->authenticationManager->authenticate($token))) {
                 return;
             }
-
             if ($authToken instanceof TokenInterface) {
               $this->tokenStorage->setToken($authToken);
             } else {
-                throw new \RuntimeException('Authentication response not a tokeninterface.');
+                throw new AuthenticationException('Authentication response not a tokeninterface.');
             }
         } catch (AuthenticationException $e) {
-            throw new \RuntimeException('Authentication Failure.');
+            throw new AuthenticationException('Authentication Failure.');
         }
 
         $response = $this->httpUtils->createRedirectResponse($request, '/');
